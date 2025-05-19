@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Student, StudentFormData } from '../types';
 import Button from './Button';
-import { validateStudentData } from '../utils/helpers';
+import { useStudentForm } from '../hooks/useStudentForm';
 
 interface StudentFormProps {
   initialData?: Student;
@@ -10,70 +10,25 @@ interface StudentFormProps {
   isSubmitting?: boolean;
 }
 
-const emptyFormData: StudentFormData = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  grade: '',
-  major: '',
-  enrollmentDate: new Date().toISOString().split('T')[0],
-  status: 'active',
-  gender: 'other',
-  phoneNumber: '',
-  address: ''
-};
-
 const StudentForm: React.FC<StudentFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
   isSubmitting = false
 }) => {
-  const [formData, setFormData] = useState<StudentFormData>(
-    initialData || emptyFormData
-  );
-  
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    }
-  }, [initialData]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setTouched(prev => ({ ...prev, [name]: true }));
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name } = e.target;
-    setTouched(prev => ({ ...prev, [name]: true }));
-    
-    const validationErrors = validateStudentData(formData);
-    setErrors(validationErrors);
-  };
+  const {
+    formData,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validateForm
+  } = useStudentForm(initialData);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const validationErrors = validateStudentData(formData);
-    setErrors(validationErrors);
-    
-    if (Object.keys(validationErrors).length === 0) {
+    if (validateForm()) {
       onSubmit(formData);
-    } else {
-      // Mark all fields as touched to show all errors
-      const allTouched = Object.keys(formData).reduce((acc, key) => {
-        acc[key] = true;
-        return acc;
-      }, {} as Record<string, boolean>);
-      
-      setTouched(allTouched);
     }
   };
 
@@ -105,7 +60,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Last Name
@@ -123,7 +78,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
@@ -141,7 +96,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.email}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Phone Number
@@ -159,7 +114,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Gender
@@ -176,7 +131,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <option value="other">Other</option>
           </select>
         </div>
-        
+
         {/* Academic Information */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -195,7 +150,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.major}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Grade
@@ -213,7 +168,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.grade}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Enrollment Date
@@ -230,7 +185,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
             <p className="mt-1 text-sm text-red-600">{errors.enrollmentDate}</p>
           )}
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Status
@@ -248,7 +203,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
           </select>
         </div>
       </div>
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Address
@@ -266,7 +221,7 @@ const StudentForm: React.FC<StudentFormProps> = ({
           <p className="mt-1 text-sm text-red-600">{errors.address}</p>
         )}
       </div>
-      
+
       <div className="flex justify-end space-x-3 pt-4">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
@@ -279,4 +234,4 @@ const StudentForm: React.FC<StudentFormProps> = ({
   );
 };
 
-export default StudentForm;
+export default StudentForm
